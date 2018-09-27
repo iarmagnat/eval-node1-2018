@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "is-ready": "nodemon ./is-ready-test.js"
   },
   "author": "Ivan Armagnat",
   "license": "ISC",
