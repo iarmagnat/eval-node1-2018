@@ -1,5 +1,6 @@
 const express = require("express")
-const fs = require("fs")
+const countManager = require("./count-manager")
+const templates = require("./templates")
 
 const args = process.argv
 
@@ -11,11 +12,34 @@ if (args[2] === "-p") {
 
 const app = express()
 
-let current = 0
+countManager.init(app)
+
+const staticRoot = __dirname + "/static"
+app.use('/static', express.static(staticRoot))
 
 app.get("/", (req, res) => {
-    res.send("<h1>Coucou</h1>")
+    const context = {
+        current: false,
+        allTime: false
+    }
+
+    const sendIfFull = () => {
+        if (context.current && context.allTime) {
+            res.send(templates.home(context))
+        }
+    }
+
+    countManager.count().then(count => {
+        context.current = count
+        sendIfFull()
+    })
+
+    countManager.allTimeCount().then(count => {
+        context.allTime = count
+        sendIfFull()
+    })
 })
+
 
 if (port) {
     app.port = port
