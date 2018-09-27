@@ -78,8 +78,6 @@ function homepagePost(req, res) {
         toReset.push("current")
     }
 
-    console.log(toReset)
-
     let promiseCount = toReset.length
 
     const renderIfDone = () => {
