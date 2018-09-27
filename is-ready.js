@@ -26,4 +26,7 @@ function isNodeModulesReady() {
     return isReady("/node_modules")
 }
 
-module.exports = isNodeModulesReady
+module.exports = {
+    isReady: isReady,
+    isNodeModulesReady: isNodeModulesReady
+}

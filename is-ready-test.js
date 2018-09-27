@@ -1,3 +1,3 @@
-const isNodeModulesReady = require("./is-ready")
+const isReady = require("./is-ready")
 
-isNodeModulesReady().then(console.log)
+isReady.isNodeModulesReady().then(console.log)

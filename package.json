@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "is-ready": "nodemon ./is-ready-test.js"
+    "is-ready": "nodemon ./is-ready-test.js",
+    "are-ready": "nodemon ./are-ready.js"
   },
   "author": "Ivan Armagnat",
   "license": "ISC",
