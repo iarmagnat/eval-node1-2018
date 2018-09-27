@@ -14,6 +14,8 @@ function home(context) {
 <p>Current: ${context["current"]}</p>
 <p>All time: ${context["allTime"]}</p>
 
+<p>JSON data: <a href="/json">Click here</a></p>
+
 <form action="/" method="post">
     <label for="current">Current</label>
     <input type="checkbox" name="current" id="current">

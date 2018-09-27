@@ -12,6 +12,34 @@ function init(app) {
     current_app.post("/", (req, res) => {
         homepagePost(req, res)
     })
+    current_app.get("/json/", (req, res) => {
+        jsonExport(req, res)
+    })
+}
+
+function jsonExport(req, res) {
+    const context = {
+        current: false,
+        allTime: false
+    }
+
+    const sendIfFull = () => {
+        if (context.current !== false && context.allTime !== false) {
+            res
+                .contentType("application/json")
+                .send(JSON.stringify(context))
+        }
+    }
+
+    countManager.count().then(count => {
+        context.current = count
+        sendIfFull()
+    })
+
+    countManager.allTimeCount().then(count => {
+        context.allTime = count
+        sendIfFull()
+    })
 }
 
 function homepage(req, res) {
@@ -62,7 +90,7 @@ function homepagePost(req, res) {
                 promiseCount--
                 renderIfDone()
             })
-            .catch(err => {
+            .catch(err => {
                 console.error(err)
             })
     })
