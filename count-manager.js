@@ -10,40 +10,19 @@ function init(app) {
 
     app.use((req, res, next) => {
         current++
-        addToAllTime()
-        next()
+        addToAllTime(next)
     })
 
 }
 
-function addToAllTime(amount = 1) {
-    const onFileOpen = (err, file) => {
-        if (err) {
+function addToAllTime(callback, amount = 1) {
+    changeAllTime("add", amount)
+        .then(data => {
+            callback()
+        })
+        .catch(err => {
             console.error(err)
-        } else {
-            const newFile = JSON.parse(file)
-            if (newFile[String(current_app.port)]) {
-                newFile[String(current_app.port)] += amount
-            } else {
-                newFile[String(current_app.port)] = 1
-            }
-
-            fs.writeFile(__dirname + '/count/all.json',
-                JSON.stringify(newFile),
-                (err) => {
-                    if (err) {
-                        console.error(err)
-                    }
-                }
-            )
-        }
-    }
-
-    fs.readFile(
-        __dirname + "/count/all.json",
-        {encoding: "utf8"},
-        onFileOpen
-    )
+        })
 }
 
 function allTimeCount(port = false) {
@@ -66,6 +45,47 @@ function allTimeCount(port = false) {
     )
 }
 
+function changeAllTime(operation, value, port = false) {
+    return new Promise((resolve, reject) => {
+        if (!port) {
+            port = current_app.port
+        }
+        const onFileOpen = (err, file) => {
+            if (err) {
+                reject(err)
+            } else {
+                const newFile = JSON.parse(file)
+
+                if (operation === "set") {
+                    newFile[String(port)] = value
+                } else if (operation === "add") {
+                    if (newFile[String(port)] !== undefined) {
+                        newFile[String(port)] += value
+                    } else {
+                        newFile[String(port)] = value
+                    }
+                }
+
+                fs.writeFile(__dirname + '/count/all.json',
+                    JSON.stringify(newFile),
+                    (err) => {
+                        if (err) {
+                            reject(err)
+                        }
+                        resolve(newFile[String(port)])
+                    }
+                )
+            }
+        }
+
+        fs.readFile(
+            __dirname + "/count/all.json",
+            {encoding: "utf8"},
+            onFileOpen
+        )
+    })
+}
+
 
 function count() {
     // this is silly but that way, the API for count and allTimeCount is the same
@@ -74,8 +94,29 @@ function count() {
     })
 }
 
+function reset(counter) {
+    if (counter === "current") {
+        return new Promise(resolve => {
+            current = 0
+            resolve(true)
+        })
+    } else if (counter === "allTime") {
+        return new Promise((resolve, reject) => {
+            changeAllTime("set", 0)
+                .then(data => {
+                    resolve(true)
+                })
+                .catch(err => {
+                    reject(err)
+                })
+        })
+    }
+    throw "Error: wrong counter"
+}
+
 module.exports = {
     init: init,
     count: count,
     allTimeCount: allTimeCount,
+    reset: reset,
 }

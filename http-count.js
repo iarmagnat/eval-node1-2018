@@ -1,6 +1,7 @@
 const express = require("express")
+const bodyParser = require("body-parser")
 const countManager = require("./count-manager")
-const templates = require("./templates")
+const routes = require("./routes")
 
 const args = process.argv
 
@@ -13,32 +14,15 @@ if (args[2] === "-p") {
 const app = express()
 
 countManager.init(app)
-
 const staticRoot = __dirname + "/static"
+
 app.use('/static', express.static(staticRoot))
+app.use(bodyParser.urlencoded({extended: false}))
 
-app.get("/", (req, res) => {
-    const context = {
-        current: false,
-        allTime: false
-    }
+app.use(bodyParser.json())
 
-    const sendIfFull = () => {
-        if (context.current && context.allTime) {
-            res.send(templates.home(context))
-        }
-    }
 
-    countManager.count().then(count => {
-        context.current = count
-        sendIfFull()
-    })
-
-    countManager.allTimeCount().then(count => {
-        context.allTime = count
-        sendIfFull()
-    })
-})
+routes.init(app)
 
 
 if (port) {
