@@ -1,6 +1,32 @@
 const fs = require("fs")
 
 
+function isreadyV1(filename) {
+    fs.stat(__dirname + filename, (err) => {
+        if (err) {
+            if (err.code === "ENOENT") {
+                errlog("Not ready")
+                process.exit(255)
+            } else {
+                errlog(err)
+                process.exit(1)
+            }
+        } else {
+            warnlog("maybe")
+            process.exit(0)
+        }
+    })
+}
+
+function errlog(message) {
+    console.log("\033[0;31m" + message + "\033[1;37m")
+}
+function warnlog(message) {
+    console.log("\033[0;33m" + message + "\033[1;37m")
+}
+
+// isreadyV1("/node_modules")
+
 function isReady(filename) {
     // we return a promise
     return new Promise((resolve, reject) => {
