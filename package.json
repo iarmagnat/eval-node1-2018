@@ -4,9 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "is-ready": "nodemon ./is-ready-test.js",
-    "are-ready": "nodemon ./are-ready.js"
+    "are-ready": "nodemon ./are-ready.js",
+    "http-count": "nodemon ./http-count.js -p 8080"
   },
   "author": "Ivan Armagnat",
   "license": "ISC",
