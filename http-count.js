@@ -3,34 +3,34 @@ const bodyParser = require("body-parser")
 const countManager = require("./count-manager")
 const routes = require("./routes")
 
-const args = process.argv
+function startApp(port) {
+    return new Promise((resolve, reject) => {
 
-let port = false
+        const app = express()
 
-if (args[2] === "-p") {
-    port = parseInt(args[3])
+        countManager.init(app)
+        const staticRoot = __dirname + "/static"
+
+        app.use('/static', express.static(staticRoot))
+        app.use(bodyParser.urlencoded({extended: false}))
+
+        app.use(bodyParser.json())
+
+        routes.init(app)
+
+        if (port) {
+            app.listen(port, () => {
+                app.port = port
+                console.log(`Listening on port ${port}...`)
+                resolve(app)
+            })
+        } else {
+            console.error("Port not incorrectly set")
+            reject(port)
+        }
+    })
 }
 
-const app = express()
-
-countManager.init(app)
-const staticRoot = __dirname + "/static"
-
-app.use('/static', express.static(staticRoot))
-app.use(bodyParser.urlencoded({extended: false}))
-
-app.use(bodyParser.json())
-
-
-routes.init(app)
-
-
-if (port) {
-    app.port = port
-    app.listen(port, () => {
-        console.log(`Listening on port ${port}...`)
-    })
-} else {
-    console.error("Port not incorrectly set")
-    process.exit(1)
+module.exports = {
+    startApp: startApp,
 }

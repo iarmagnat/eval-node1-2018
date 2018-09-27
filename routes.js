@@ -20,7 +20,8 @@ function init(app) {
 function jsonExport(req, res) {
     const context = {
         current: false,
-        allTime: false
+        allTime: false,
+        port: current_app.port,
     }
 
     const sendIfFull = () => {
