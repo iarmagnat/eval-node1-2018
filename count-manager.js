@@ -2,21 +2,60 @@ const fs = require("fs")
 
 let current_app
 
-let current = 0
+let current = {}
 
-function init(app) {
+function getPort(req) {
+    const regex = /.+:(\d+)/
+    const str = req.get("host")
+    return regex.exec(str)[1]
+}
+
+
+function init(app, port) {
 
     current_app = app
 
-    app.use((req, res, next) => {
-        current++
-        addToAllTime(next)
-    })
+
+        app.use((req, res, next) => {
+            const port = getPort(req)
+            if (current[port]) {
+                current[port]++
+            } else {
+                current[port] = 1
+            }
+            addToAllTime(port, next)
+        })
+
+    createAllTimeIfNeeded(port)
 
 }
 
-function addToAllTime(callback, amount = 1) {
-    changeAllTime("add", amount)
+function createAllTimeIfNeeded(port) {
+    fs.stat(
+        __dirname + "/count/" + port + ".json",
+        (err) => {
+            if (err) {
+                if (err.code === "ENOENT") {
+                    fs.writeFile(
+                        __dirname + "/count/" + port + ".json",
+                        JSON.stringify({
+                            [port]: 0,
+                        }),
+                        (err) => {
+                            if (err) {
+                                throw err
+                            }
+                        }
+                    )
+                } else {
+                    throw err
+                }
+            }
+        })
+}
+
+function addToAllTime(port, callback, amount = 1) {
+    changeAllTime("add", amount, port)
         .then(data => {
             callback()
         })
@@ -31,7 +70,7 @@ function allTimeCount(port = false) {
     }
     return new Promise((resolve, reject) => {
             fs.readFile(
-                __dirname + "/count/all.json",
+                __dirname + "/count/" + port + ".json",
                 {encoding: "utf8"},
                 (err, file) => {
                     if (err) {
@@ -45,11 +84,8 @@ function allTimeCount(port = false) {
     )
 }
 
-function changeAllTime(operation, value, port = false) {
+function changeAllTime(operation, value, port) {
     return new Promise((resolve, reject) => {
-        if (!port) {
-            port = current_app.port
-        }
         const onFileOpen = (err, file) => {
             if (err) {
                 reject(err)
@@ -66,7 +102,8 @@ function changeAllTime(operation, value, port = false) {
                     }
                 }
 
-                fs.writeFile(__dirname + '/count/all.json',
+                fs.writeFile(
+                    __dirname + "/count/" + port + ".json",
                     JSON.stringify(newFile),
                     (err) => {
                         if (err) {
@@ -79,7 +116,7 @@ function changeAllTime(operation, value, port = false) {
         }
 
         fs.readFile(
-            __dirname + "/count/all.json",
+            __dirname + "/count/" + port + ".json",
             {encoding: "utf8"},
             onFileOpen
         )
@@ -87,22 +124,22 @@ function changeAllTime(operation, value, port = false) {
 }
 
 
-function count() {
+function count(port) {
     // this is silly but that way, the API for count and allTimeCount is the same
     return new Promise(resolve => {
-        resolve(current)
+        resolve(current[port])
     })
 }
 
-function reset(counter) {
+function reset(counter, port) {
     if (counter === "current") {
         return new Promise(resolve => {
-            current = 0
+            current[port] = 0
             resolve(true)
         })
     } else if (counter === "allTime") {
         return new Promise((resolve, reject) => {
-            changeAllTime("set", 0)
+            changeAllTime("set", 0, port)
                 .then(data => {
                     resolve(true)
                 })
@@ -119,4 +156,5 @@ module.exports = {
     count: count,
     allTimeCount: allTimeCount,
     reset: reset,
+    getPort: getPort,
 }

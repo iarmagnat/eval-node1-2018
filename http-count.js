@@ -8,7 +8,7 @@ function startApp(port) {
 
         const app = express()
 
-        countManager.init(app)
+        countManager.init(app, port)
         const staticRoot = __dirname + "/static"
 
         app.use('/static', express.static(staticRoot))

@@ -18,10 +18,11 @@ function init(app) {
 }
 
 function jsonExport(req, res) {
+    const port = countManager.getPort(req)
     const context = {
         current: false,
         allTime: false,
-        port: current_app.port,
+        port: port,
     }
 
     const sendIfFull = () => {
@@ -32,18 +33,19 @@ function jsonExport(req, res) {
         }
     }
 
-    countManager.count().then(count => {
+    countManager.count(port).then(count => {
         context.current = count
         sendIfFull()
     })
 
-    countManager.allTimeCount().then(count => {
+    countManager.allTimeCount(port).then(count => {
         context.allTime = count
         sendIfFull()
     })
 }
 
 function homepage(req, res) {
+    const port = countManager.getPort(req)
     const context = {
         current: false,
         allTime: false
@@ -55,18 +57,19 @@ function homepage(req, res) {
         }
     }
 
-    countManager.count().then(count => {
+    countManager.count(port).then(count => {
         context.current = count
         sendIfFull()
     })
 
-    countManager.allTimeCount().then(count => {
+    countManager.allTimeCount(port).then(count => {
         context.allTime = count
         sendIfFull()
     })
 }
 
 function homepagePost(req, res) {
+    const port = countManager.getPort(req)
     const toReset = []
     if (req.body.allTime) {
         toReset.push("allTime")
@@ -86,7 +89,7 @@ function homepagePost(req, res) {
     }
 
     toReset.forEach(counter => {
-        countManager.reset(counter)
+        countManager.reset(counter, port)
             .then(data => {
                 promiseCount--
                 renderIfDone()
